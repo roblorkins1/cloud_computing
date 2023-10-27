@@ -1,0 +1,32 @@
+import requests
+from pprint import pprint
+
+categories_url_template = 'https://data.police.uk/api/crime-categories?date={date}'
+resp = requests.get(categories_url_template.format(date=my_date))
+
+if resp.ok:
+    categories_json = resp.json()
+else:
+    print(resp.reason)
+
+categories = {categ["url"]: categ["name"] for categ in categories_json}
+crime_category_stats = dict.fromkeys(categories.keys(), 0)
+crime_category_stats.pop("all-crime")
+
+for crime in crimes:
+    crime_category_stats[crime["category"]] += 1
+
+pprint(crime_category_stats)
+
+crime_outcome_stats = {'None': 0}
+
+for crime in crimes:
+    outcome = crime["outcome_status"]
+    if not outcome:
+        crime_outcome_stats['None'] += 1
+    elif outcome['category'] not in crime_outcome_stats.keys():
+        crime_outcome_stats.update({outcome['category']: 1})
+    else:
+        crime_outcome_stats[outcome['category']] += 1
+
+print(crime_outcome_stats)
